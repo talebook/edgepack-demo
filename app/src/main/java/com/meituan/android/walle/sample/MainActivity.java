@@ -28,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private void readChannel() {
         final TextView tv = (TextView) findViewById(R.id.tv_channel);
         final long startTime = System.currentTimeMillis();
-        final ChannelInfo channelInfo = WalleChannelReader.getChannelInfo(this.getApplicationContext());
-        if (channelInfo != null) {
-            tv.setText(channelInfo.getChannel() + "\n" + channelInfo.getExtraInfo());
+        final String info = WalleChannelReader.getString(this.getApplicationContext());
+        if (info != null) {
+            tv.setText(info);
         }
         Toast.makeText(this, "ChannelReader takes " + (System.currentTimeMillis() - startTime) + " milliseconds", Toast.LENGTH_SHORT).show();
     }

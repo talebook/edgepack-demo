@@ -4,12 +4,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public final class ChannelReader {
     public static final String CHANNEL_KEY = "channel";
+    public static final String CDN_MAGIC_KEY = "APK Sig Block 42";
 
     private ChannelReader() {
         super();
@@ -31,6 +34,22 @@ public final class ChannelReader {
         return new ChannelInfo(channel, result);
     }
 
+    public static String getString(final File apkFile)  {
+        final String rawString = getRaw(apkFile);
+        if (rawString == null) {
+            return null;
+        }
+        if ( ! rawString.startsWith(CDN_MAGIC_KEY) ) {
+            return null;
+        }
+        final String dataString = rawString.substring(CDN_MAGIC_KEY.length()).trim();
+        try {
+            return URLDecoder.decode(dataString, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return dataString;
+        }
+    }
+
     /**
      * get channel & extra info by map, use {@link ChannelReader#CHANNEL_KEY PayloadReader.CHANNEL_KEY} get channel
      *
@@ -43,7 +62,11 @@ public final class ChannelReader {
             if (rawString == null) {
                 return null;
             }
-            final JSONObject jsonObject = new JSONObject(rawString);
+            if ( ! rawString.startsWith(CDN_MAGIC_KEY) ) {
+                return null;
+            }
+            final String jsonString = URLDecoder.decode(rawString.substring(CDN_MAGIC_KEY.length()).trim(), "UTF-8");
+            final JSONObject jsonObject = new JSONObject(jsonString);
             final Iterator keys = jsonObject.keys();
             final Map<String, String> result = new HashMap<String, String>();
             while (keys.hasNext()) {
@@ -51,7 +74,7 @@ public final class ChannelReader {
                 result.put(key, jsonObject.getString(key));
             }
             return result;
-        } catch (JSONException e) {
+        } catch (JSONException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         return null;

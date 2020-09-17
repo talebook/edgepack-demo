@@ -56,6 +56,14 @@ public final class WalleChannelReader {
         return ChannelReader.get(new File(apkPath));
     }
 
+    public static String getString(final Context context) {
+        final String apkPath = getApkPath(context);
+        if (TextUtils.isEmpty(apkPath)) {
+            return null;
+        }
+        return ChannelReader.getString(new File(apkPath));
+    }
+
     /**
      * get value by key
      *
