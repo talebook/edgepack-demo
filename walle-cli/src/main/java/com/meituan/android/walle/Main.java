@@ -3,6 +3,7 @@ package com.meituan.android.walle;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.meituan.android.walle.commands.Batch2Command;
+import com.meituan.android.walle.commands.EdgePackCommand;
 import com.meituan.android.walle.commands.IWalleCommand;
 import com.meituan.android.walle.commands.RemoveCommand;
 import com.meituan.android.walle.commands.ShowCommand;
@@ -28,6 +29,7 @@ public final class Main {
         subCommandList.put("put", new PutCommand());
         subCommandList.put("batch", new BatchCommand());
         subCommandList.put("batch2", new Batch2Command());
+        subCommandList.put("edgepack", new EdgePackCommand());
 
         final WalleCommandLine walleCommandLine = new WalleCommandLine();
         final JCommander commander = new JCommander(walleCommandLine);
