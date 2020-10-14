@@ -23,7 +23,7 @@ public class EdgePackCommand implements IWalleCommand{
     // Our Channel Block ID
     public static final int WALLE_BLOCK_ID = 0x71777777;
 
-    @Parameter(required = true, description = "inputFile [outputFile]", arity = 2, converter = FileConverter.class)
+    @Parameter(required = true, description = "inputFile",  arity = 1,  converter = FileConverter.class)
     private List<File> files;
 
     @Parameter(names = {"-k", "--edgepack-id"}, description = "APK sign block ID for EdgePack (default is WALLE's ID)" )
@@ -36,30 +36,28 @@ public class EdgePackCommand implements IWalleCommand{
     public void parse() {
         final File inputFile = files.get(0);
         File outputFile = null;
-        if (files.size() == 2) {
-            outputFile = files.get(1);
-        } else {
-            final String name = FilenameUtils.getBaseName(inputFile.getName());
-            final String extension = FilenameUtils.getExtension(inputFile.getName());
-            final String newName = name + "_edgepack" + "." + extension;
-            outputFile = new File(inputFile.getParent(), newName);
-        }
-        if (!inputFile.equals(outputFile)) {
-            try {
-                FileUtils.copyFile(inputFile, outputFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
-        }
-
-        String magic = ChannelReader.CDN_MAGIC_KEY;
-        int n = edgepack_size - magic.length();
-        String edgepack_block = magic + String.format("%"+n+"s","");
+        final String name = FilenameUtils.getBaseName(inputFile.getName());
+        final String extension = FilenameUtils.getExtension(inputFile.getName());
+        final String newName = name + "_edgepack" + "." + extension;
+        outputFile = new File(inputFile.getParent(), newName);
         try {
+            FileUtils.copyFile(inputFile, outputFile);
+
+            String magic = ChannelReader.CDN_MAGIC_KEY;
+            int n = edgepack_size - magic.length();
+            String edgepack_block = magic + String.format("%"+n+"s","");
             PayloadWriter.put(outputFile, edgepack_id, edgepack_block, false);
-        } catch (IOException | SignatureNotFoundException e) {
+
+            long offset = PayloadWriter.getCentralDirStartOffset(outputFile);
+            final String finalName = String.format("%s_offset_%d.%s", name, offset, extension);
+            outputFile.renameTo(new File(inputFile.getParent(), finalName));
+
+            System.out.printf("Output File: %s\n", finalName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SignatureNotFoundException e) {
             e.printStackTrace();
         }
+
     }
 }

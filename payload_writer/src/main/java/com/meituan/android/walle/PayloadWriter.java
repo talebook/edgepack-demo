@@ -152,6 +152,24 @@ public final class PayloadWriter {
         ApkSigningBlock handle(Map<Integer, ByteBuffer> originIdValues);
     }
 
+    public static long getCentralDirStartOffset(final File apkFile) throws IOException, SignatureNotFoundException  {
+        RandomAccessFile fIn = null;
+        FileChannel fileChannel = null;
+        try {
+            fIn = new RandomAccessFile(apkFile, "rw");
+            fileChannel = fIn.getChannel();
+            final long commentLength = ApkUtil.getCommentLength(fileChannel);
+            return ApkUtil.findCentralDirStartOffset(fileChannel, commentLength);
+        } finally {
+            if (fileChannel != null) {
+                fileChannel.close();
+            }
+            if (fIn != null) {
+                fIn.close();
+            }
+        }
+    }
+
     static void handleApkSigningBlock(final File apkFile, final ApkSigningBlockHandler handler, final boolean lowMemory) throws IOException, SignatureNotFoundException {
         RandomAccessFile fIn = null;
         FileChannel fileChannel = null;
